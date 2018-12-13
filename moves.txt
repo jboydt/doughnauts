@@ -1,0 +1,5 @@
+# List of Moves
+# {Index,Name, Descpription}
+1,SpewJelly,Spews jelly onto the target dealing 10-20 damage and decreasing enemy speed by 20
+2,Bide,2 round cooldown Absorb the next enemy attack and if you were going to take damage, reflect 50% of it back
+3,Slam,Deal 20-30 damage to the target
