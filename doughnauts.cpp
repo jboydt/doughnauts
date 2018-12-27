@@ -194,8 +194,6 @@ void DoughNaut::MainMenu() {
 
 void DoughNaut::createMove() {
   moveDetails md;
-  int index; 
-  string name, description;
   
   // Get user index 
   // Will auto index in future
@@ -288,10 +286,28 @@ void DoughNaut::createDoughNaut() {
     cin >> dd.health;
   cout << "Enter Speed: ";
     cin >> dd.speed;
-  // select & view moves
-  cout << "Now Select three unique moves\n";
-  cout << outputMoves();
-
+  // view moves
+  cout << "\nNow Select three unique moves\n";
+  cout << outputMoves() << endl;
+  // select moves
+  cout  << "A move is selected by inputting the corresponding #\n";
+  cout  << "Enter MoveA: ";
+    cin >> choice;
+    dd.moveA = moves.at(choice).name;
+  cout  << "Enter MoveB: ";
+    cin >> choice;
+    dd.moveB = moves.at(choice).name;
+  cout  << "Enter MoveC: ";
+    cin >> choice;
+    dd.moveC = moves.at(choice).name;
+//ERROR HERE
+// HOW TO GET ERROR: execute program, enter option 5, fill in prompts
+// terminate called after throwing an instance of 'std::out_of_range'
+// what():  vector::_M_range_check
+// bash: line 12: 31898 Aborted                 "$file.o"
+  appendDoughnautHolder.push_back(dd);
+  cout << "Your combatant looks like: \n"
+       << appendDoughnautHolder.at(0);
 }
 
 string DoughNaut::outputDoughnauts() {
@@ -401,6 +417,6 @@ moveDetails DoughNaut::tokenizeMoves(string input) {
     ssCRN.str("");
     ssCRN.clear();
   getline(ss, md.name, ',');
-  getline(ss, md.description, ',');
+  getline(ss, md.description);
   return md;
 }
