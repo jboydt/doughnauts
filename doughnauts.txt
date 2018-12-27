@@ -1,2 +1,2 @@
 # {Name,Health,Speed,moveA,moveB,moveC}
-JellyMonster,150,100,1,2,3
+JellyMonster,150,100,Stock1,Stock2,Stock3

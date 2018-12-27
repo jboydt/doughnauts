@@ -17,28 +17,42 @@ using std::string;
 using std::ifstream;
 using std::ofstream;
 using std::getline;
+using std::istringstream;
 using std::stringstream;
 using std::ostringstream;
 using std::setw;
 using std::setfill;
+using std::ostream;
+
+
 
 struct doughnautDetails {
   string name;
   int health;
   int speed;
-  unsigned int moveA;
-  unsigned int moveB;
-  unsigned int moveC;
+  string moveA;
+  string moveB;
+  string moveC;
   
   // constructor for creating a doughnaut
   doughnautDetails() {
     string name = "doughnautName";
-    int health = 100;
-    int speed = 50;
-    unsigned int moveA = 1;
-    unsigned int moveB = 2;
-    unsigned int moveC = 3;
+    health = 100;
+    speed = 50;
+    moveA = "First Move";
+    moveB = "Second Move";
+    moveC = "Third Move";
   } 
+  
+  friend ostream& operator<< (ostream& outs, const doughnautDetails& dd) {
+    outs << std::left << setw(15) << setfill(' ') << dd.name
+         << std::left << setw(7) << setfill(' ') << dd.health
+         << std::left << setw(7) << setfill(' ') << dd.speed
+         << std::left << setw(10) << setfill(' ') << dd.moveA
+         << std::left << setw(10) << setfill(' ') << dd.moveB
+         << std::left << setw(10) << setfill(' ') << dd.moveC;
+    return outs;
+  }
 };
 
 struct moveDetails {
@@ -46,13 +60,32 @@ struct moveDetails {
   string name;
   string description;
   
-  
-    // constructor for creating a move
+  // constructor for creating a move
     moveDetails() {
       index = 1;
       name = "moveName";
       description = "This move does something";
     }
+    
+  // Overlod operator <<
+  // Allows convinient stream output of moves
+  friend ostream& operator<< (ostream& outs, const moveDetails& md) {
+    outs << std::left << setw(3) << setfill(' ') << md.index
+         << std::left << setw(15) << setfill(' ')  << md.name
+         << std::left << setw(100) << setfill(' ') << md.description;
+    return outs;
+  }
+  // Overload operator ==
+  // Allows for comparisons of two moves (some future usage)
+  bool operator== (const moveDetails& md) const {
+    return (
+      index == md.index &&
+      name == md.name &&
+      description == md.description
+    );
+  };
+  
+  
 };
 
 
@@ -63,19 +96,36 @@ class DoughNaut {
   // Main Menu
   void MainMenu();
   
-  //Index a move to be utilized when building a doughnaut
+  // create a stored move to be used when buidling a doughnaut
   void createMove();
   
-  //Create a complete DoughNaut with stats and a moveset
-  doughnautDetails createDoughNaut();
+  // load moves into vector
+  bool loadMoves(string filename);
+  
+  // Output Moves
+  string outputMoves();
+  
+  // Create a complete DoughNaut with stats and a moveset
+  void createDoughNaut();
+  
+  // load doughnaut characters into vector
+  bool loadDoughnauts(string filename);
+  
+  // output doughnauts
+  string outputDoughnauts();
   
   // Exit
   void Exit();
   
   private:
     unsigned int choice;
+    vector<moveDetails> moves;
     vector<moveDetails> appendMoveHolder;
+    vector<doughnautDetails> doughnauts;
     vector<doughnautDetails> appendDoughnautHolder;
+    
+    moveDetails tokenizeMoves(string input);
+    doughnautDetails tokenizeDoughnauts(string input);
 };
 
 
@@ -88,6 +138,8 @@ int main() {
   //   fh.addFight(f1);
   // }
   DoughNaut D;
+  D.loadMoves("moves.txt");
+  D.loadDoughnauts("doughnauts.txt");
   cout << "\nWelcome to Doughnauts\n"
        << "Design or fight doughnauts in a turn-based fighting game\n" << endl;
   D.MainMenu();
@@ -98,9 +150,11 @@ int main() {
 void DoughNaut::MainMenu() {
   cout << std::left << setw(3) << setfill(' ') << "#" << "Main Menu\n"
        << std::left << setw(3) << setfill(' ') << "1" << "Enter the Arena\n"
-       << std::left << setw(3) << setfill(' ') << "2" << "Create a new Move\n"
-       << std::left << setw(3) << setfill(' ') << "3" << "Design a new DoughNaut\n"
-       << std::left << setw(3) << setfill(' ') << "4" << "Exit\n"
+       << std::left << setw(3) << setfill(' ') << "2" << "Browse Doughnauts\n"
+       << std::left << setw(3) << setfill(' ') << "3" << "Browse Moves\n"
+       << std::left << setw(3) << setfill(' ') << "4" << "Create a new Move\n"
+       << std::left << setw(3) << setfill(' ') << "5" << "Design a new DoughNaut\n"
+       << std::left << setw(3) << setfill(' ') << "6" << "Exit\n"
        << "Enter option: ";
   cin >> choice;
   cout << endl;
@@ -110,14 +164,22 @@ void DoughNaut::MainMenu() {
       break;
     }
     case 2: {
-      createMove();
+      cout << outputDoughnauts();
       break;
     }
     case 3: {
-      createDoughNaut();
+      cout << outputMoves();
       break;
     }
     case 4: {
+      createMove();
+      break;
+    }
+    case 5: {
+      createDoughNaut();
+      break;
+    }
+    case 6: {
       Exit();
       break;
     }
@@ -135,7 +197,8 @@ void DoughNaut::createMove() {
   int index; 
   string name, description;
   
-  // Get user index
+  // Get user index 
+  // Will auto index in future
   cout << "Enter index: ";
     cin >> md.index;
   cout << "Enter name: ";
@@ -161,7 +224,7 @@ void DoughNaut::createMove() {
         cout << "\nOpening moves.txt for appending..." << endl;
         // Declare our Stream and open all at once
         ofstream fout("moves.txt", std::ios::app);
-          // Output/Append to data.txt
+          // Output/Append to move.txt
         if (fout.good()) {
           fout << md.index << "," 
                << md.name  << ","
@@ -191,18 +254,153 @@ void DoughNaut::createMove() {
         Exit();
       }
         break;
-      default:
+      default: {
         break;
+      }
    }
+}
+
+string DoughNaut::outputMoves() {
+  // header
+  cout << std::left << setw(3) << setfill(' ') << "#"
+         << std::left << setw(15) << setfill(' ')  << "Name"
+         << std::left << setw(100) << setfill(' ') << "Description"
+         << endl;
+  // moves
+  ostringstream outs;
+  for (auto i = moves.begin(); i != moves.end(); i++) {
+    outs << *i << endl;
+  }
+  return outs.str();
+}
+
+void DoughNaut::createDoughNaut() {
+  doughnautDetails dd;
+  // Usage
+  cout << "Welcome to the DoughNaut Creation Studio\n"
+       << "Here are the recommended guidelines for balancing your DoughNaut\n"
+       << "Health: 100-250\n"
+       << "Speed: 0-100\n" << endl;
+  // get stats
+  cout << "Name your DoughNaut: ";
+    cin >> dd.name;
+  cout << "Enter Health: ";
+    cin >> dd.health;
+  cout << "Enter Speed: ";
+    cin >> dd.speed;
+  // select & view moves
+  cout << "Now Select three unique moves\n";
+  cout << outputMoves();
 
 }
 
-doughnautDetails DoughNaut::createDoughNaut() {
-  
-  cout << "\nIn Progress";
+string DoughNaut::outputDoughnauts() {
+  // header
+  cout << std::left << setw(15) << setfill(' ') << "Name"
+       << std::left << setw(7) << setfill(' ') << "Health"
+       << std::left << setw(7) << setfill(' ') << "Speed"
+       << std::left << setw(10) << setfill(' ') << "MoveA"
+       << std::left << setw(10) << setfill(' ') << "MoveB"
+       << std::left << setw(10) << setfill(' ') << "Movec"
+       << endl;
+  // moves
+  ostringstream outs;
+  for (auto i = doughnauts.begin(); i != doughnauts.end(); i++) {
+    outs << *i << endl;
+  }
+  return outs.str(); 
 }
+
+
 void DoughNaut::Exit() {
   
-  
+  cout << moves.at(0).name;
+  cout << doughnauts.at(0).name;
   cout << "\nProgram succesfully terminated\n";
+}
+
+// Loads in moves data into a vector
+bool DoughNaut::loadMoves(string filename) {
+  // open file
+  ifstream inputFile;
+  inputFile.open(filename);
+  // if open
+  if(inputFile.is_open()) {
+    string fileLine;
+    unsigned int i = 0;
+    while (getline(inputFile, fileLine)) {
+      // ignore comment lines with # in file
+      if ( fileLine[0] != '#') {
+        moves.push_back(tokenizeMoves(fileLine));
+        i++;
+      }
+    } 
+    inputFile.close();
+    cout << filename << " was loaded\n";
+    return true;
+  }
+}
+
+bool DoughNaut::loadDoughnauts(string filename) {
+  // open file
+  ifstream inputFile;
+  inputFile.open(filename);
+  // if open
+  if(inputFile.is_open()) {
+    string fileLine;
+    unsigned int i = 0;
+    // load fileline data into vector
+    while (getline(inputFile, fileLine)) {
+      // ignore comment lines with # in file
+      if ( fileLine[0] != '#') {
+        doughnauts.push_back(tokenizeDoughnauts(fileLine));
+        i++;
+      }
+    } 
+    inputFile.close();
+    cout << filename << " was loaded\n\n";
+    return true;
+  }  
+}
+
+// Tokenize doughnauts stats
+doughnautDetails DoughNaut::tokenizeDoughnauts(string input) {
+  doughnautDetails dd;
+  string convertHealth, convertSpeed;
+  istringstream ss(input);
+  getline(ss, dd.name, ',');
+  // convert segment into integer
+  getline(ss, convertHealth, ',');
+    stringstream ssCRN(convertHealth); 
+    ssCRN >> dd.health;
+    // clear string + buffer so it can be used again
+    ssCRN.str("");
+    ssCRN.clear();
+  getline(ss, convertSpeed, ',');
+  // allows ssCRN to be used again
+  ssCRN << " " << convertSpeed;
+    ssCRN >> dd.speed;
+    ssCRN.str("");
+    ssCRN.clear();
+  getline(ss, dd.moveA, ',');
+  getline(ss, dd.moveB, ',');
+  getline(ss, dd.moveC, ',');
+  return dd;
+}
+
+// Tokenize moves file
+moveDetails DoughNaut::tokenizeMoves(string input) {
+  moveDetails md;
+  string convertIndex;
+  istringstream ss(input);
+  // convert index to string
+  getline(ss, convertIndex, ',');
+    stringstream ssCRN(convertIndex);
+    ssCRN >> md.index;
+    // clear
+    ssCRN.str("");
+    ssCRN.clear();
+  getline(ss, md.name, ',');
+  getline(ss, md.description, ',');
+  return md;
 }
