@@ -48,9 +48,9 @@ struct doughnautDetails {
     outs << std::left << setw(15) << setfill(' ') << dd.name
          << std::left << setw(7) << setfill(' ') << dd.health
          << std::left << setw(7) << setfill(' ') << dd.speed
-         << std::left << setw(10) << setfill(' ') << dd.moveA
-         << std::left << setw(10) << setfill(' ') << dd.moveB
-         << std::left << setw(10) << setfill(' ') << dd.moveC;
+         << std::left << setw(12) << setfill(' ') << dd.moveA
+         << std::left << setw(12) << setfill(' ') << dd.moveB
+         << std::left << setw(12) << setfill(' ') << dd.moveC;
     return outs;
   }
 };
@@ -293,21 +293,68 @@ void DoughNaut::createDoughNaut() {
   cout  << "A move is selected by inputting the corresponding #\n";
   cout  << "Enter MoveA: ";
     cin >> choice;
-    dd.moveA = moves.at(choice).name;
+    dd.moveA = moves.at(choice+1).name;
   cout  << "Enter MoveB: ";
     cin >> choice;
-    dd.moveB = moves.at(choice).name;
+    dd.moveB = moves.at(choice+1).name;
   cout  << "Enter MoveC: ";
     cin >> choice;
-    dd.moveC = moves.at(choice).name;
-//ERROR HERE
-// HOW TO GET ERROR: execute program, enter option 5, fill in prompts
-// terminate called after throwing an instance of 'std::out_of_range'
-// what():  vector::_M_range_check
-// bash: line 12: 31898 Aborted                 "$file.o"
+    dd.moveC = moves.at(choice+1).name;
+
   appendDoughnautHolder.push_back(dd);
   cout << "Your combatant looks like: \n"
-       << appendDoughnautHolder.at(0);
+       << appendDoughnautHolder.at(0) << endl;
+    
+  cout << std::left << setw(3) << setfill(' ') << "#" << "Options\n"
+       << std::left << setw(3) << setfill(' ') << "1" << "Confirm\n"
+       << std::left << setw(3) << setfill(' ') << "2" << "Edit\n"
+       << std::left << setw(3) << setfill(' ') << "3" << "Main Menu\n"
+       << std::left << setw(3) << setfill(' ') << "4" << "Exit\n"
+       << "Enter option: ";
+  cin >> choice;
+    switch (choice) {
+      case 1: {
+        cout << "\nOpening doughnauts.txt for appending..." << endl;
+        // Declare our Stream and open all at once
+        ofstream fout("doughnauts.txt", std::ios::app);
+          // Output/Append to move.txt
+        if (fout.good()) {
+          fout << dd.name << "," 
+               << dd.health << ","
+               << dd.speed 
+               << dd.moveA
+               << dd.moveB
+               << dd.moveC
+               << "\n";
+        // Close out Streams
+          fout.close();
+                cout << "Successfully created " << appendDoughnautHolder.at(0).name << endl << endl;
+        }
+        else {
+          cout << "Failed to append\n";
+        }
+        MainMenu();
+        break;
+      }
+      case 2: {
+        appendDoughnautHolder.clear();
+        createDoughNaut();
+        break;
+      }
+      case 3: {
+        appendDoughnautHolder.clear();
+        MainMenu();
+        break;
+      }
+      case 4: {
+        appendDoughnautHolder.clear();
+        Exit();
+      }
+        break;
+      default: {
+        break;
+      }
+   }
 }
 
 string DoughNaut::outputDoughnauts() {
@@ -315,9 +362,9 @@ string DoughNaut::outputDoughnauts() {
   cout << std::left << setw(15) << setfill(' ') << "Name"
        << std::left << setw(7) << setfill(' ') << "Health"
        << std::left << setw(7) << setfill(' ') << "Speed"
-       << std::left << setw(10) << setfill(' ') << "MoveA"
-       << std::left << setw(10) << setfill(' ') << "MoveB"
-       << std::left << setw(10) << setfill(' ') << "Movec"
+       << std::left << setw(12) << setfill(' ') << "MoveA"
+       << std::left << setw(12) << setfill(' ') << "MoveB"
+       << std::left << setw(12) << setfill(' ') << "Movec"
        << endl;
   // moves
   ostringstream outs;
@@ -330,8 +377,6 @@ string DoughNaut::outputDoughnauts() {
 
 void DoughNaut::Exit() {
   
-  cout << moves.at(0).name;
-  cout << doughnauts.at(0).name;
   cout << "\nProgram succesfully terminated\n";
 }
 
