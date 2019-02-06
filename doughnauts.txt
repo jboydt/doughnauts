@@ -1,2 +1,4 @@
-# {Name,Health,Speed,moveA,moveB,moveC}
-JellyMonster,150,100,Stock1,Stock2,Stock3
+# {Index, Name,Health,Speed,moveA,moveB,moveC}
+0,JellyMonster,150,100,Slam,Bide,Spew Jelly
+1,SecondChar,175,40,Spew Jelly,Slam,Bide
+2,ThirdChar,150,60,Bide,Spew Jelly,Slam

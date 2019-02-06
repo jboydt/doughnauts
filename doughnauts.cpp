@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <vector>
 #include <iomanip>
+#include <cstdlib>
+#include <ctime>
 using std::array;
 using std::vector;
 using std::cout;
@@ -27,6 +29,7 @@ using std::ostream;
 
 
 struct doughnautDetails {
+  int index;
   string name;
   int health;
   int speed;
@@ -36,6 +39,7 @@ struct doughnautDetails {
   
   // constructor for creating a doughnaut
   doughnautDetails() {
+    index = 0;
     string name = "doughnautName";
     health = 100;
     speed = 50;
@@ -45,7 +49,8 @@ struct doughnautDetails {
   } 
   
   friend ostream& operator<< (ostream& outs, const doughnautDetails& dd) {
-    outs << std::left << setw(15) << setfill(' ') << dd.name
+    outs << std::left << setw(3) << setfill(' ') << dd.index
+         << std::left << setw(15) << setfill(' ') << dd.name
          << std::left << setw(7) << setfill(' ') << dd.health
          << std::left << setw(7) << setfill(' ') << dd.speed
          << std::left << setw(12) << setfill(' ') << dd.moveA
@@ -114,6 +119,9 @@ class DoughNaut {
   // output doughnauts
   string outputDoughnauts();
   
+  // Arena Menu
+  void arenaMenu();
+  
   // Exit
   void Exit();
   
@@ -123,7 +131,8 @@ class DoughNaut {
     vector<moveDetails> appendMoveHolder;
     vector<doughnautDetails> doughnauts;
     vector<doughnautDetails> appendDoughnautHolder;
-    
+    vector<doughnautDetails> playerOne;
+    vector<doughnautDetails> playerTwo;
     moveDetails tokenizeMoves(string input);
     doughnautDetails tokenizeDoughnauts(string input);
 };
@@ -137,11 +146,13 @@ int main() {
   // for (unsigned int i=0; i<1000; i++) {
   //   fh.addFight(f1);
   // }
+  srand(time(0));
   DoughNaut D;
   D.loadMoves("moves.txt");
   D.loadDoughnauts("doughnauts.txt");
   cout << "\nWelcome to Doughnauts\n"
        << "Design or fight doughnauts in a turn-based fighting game\n" << endl;
+       
   D.MainMenu();
   
   return 0;
@@ -160,15 +171,17 @@ void DoughNaut::MainMenu() {
   cout << endl;
   switch (choice) {
     case 1: {
-     // New Menu with selecting a doughnaut
+      arenaMenu();
       break;
     }
     case 2: {
-      cout << outputDoughnauts();
+      cout << outputDoughnauts() << endl;
+      MainMenu();
       break;
     }
     case 3: {
-      cout << outputMoves();
+      cout << outputMoves() << endl;
+      MainMenu();
       break;
     }
     case 4: {
@@ -192,13 +205,34 @@ void DoughNaut::MainMenu() {
   }
 }
 
+void DoughNaut::arenaMenu() {
+  cout << "Welcome to the Arena!\n"
+       << std::left << setw(3) << setfill(' ') << "#" << "Options\n"
+       << std::left << setw(3) << setfill(' ') << "1" << "Battle AI\n"
+       << std::left << setw(3) << setfill(' ') << "2" << "Challenge a user\n"
+       << "Enter Option: ";
+  cin >> choice;
+  if (choice == 1) {
+    cout << outputDoughnauts();
+    cout << "Enter combatant #: ";
+      cin >> choice;
+    playerOne.push_back(doughnauts.at(choice));
+    cout << "Prepare yourself, " << playerOne.at(0).name << endl;
+    // randomize AI
+    choice = (rand() % doughnauts.size());
+    playerTwo.push_back(doughnauts.at(choice));
+    cout << playerTwo.at(0).name << " seeks your head!";
+  }
+  
+  
+  
+}
 void DoughNaut::createMove() {
   moveDetails md;
   
   // Get user index 
   // Will auto index in future
-  cout << "Enter index: ";
-    cin >> md.index;
+  md.index = moves.size() + 1;
   cout << "Enter name: ";
     cin >> md.name;
   cout << "Enter description: ";
@@ -206,7 +240,6 @@ void DoughNaut::createMove() {
   appendMoveHolder.push_back(md);
   // Before moving on, make sure everything is filled in
   cout << "\nYour move: \n"
-       << appendMoveHolder.at(0).index << "," 
        << appendMoveHolder.at(0).name  << ","
        << appendMoveHolder.at(0).description << endl;
        
@@ -269,6 +302,8 @@ string DoughNaut::outputMoves() {
   for (auto i = moves.begin(); i != moves.end(); i++) {
     outs << *i << endl;
   }
+  
+  
   return outs.str();
 }
 
@@ -280,6 +315,7 @@ void DoughNaut::createDoughNaut() {
        << "Health: 100-250\n"
        << "Speed: 0-100\n" << endl;
   // get stats
+  dd.index = doughnauts.size() + 1;
   cout << "Name your DoughNaut: ";
     cin >> dd.name;
   cout << "Enter Health: ";
@@ -293,17 +329,17 @@ void DoughNaut::createDoughNaut() {
   cout  << "A move is selected by inputting the corresponding #\n";
   cout  << "Enter MoveA: ";
     cin >> choice;
-    dd.moveA = moves.at(choice+1).name;
+    dd.moveA = moves.at(choice).name;
   cout  << "Enter MoveB: ";
     cin >> choice;
-    dd.moveB = moves.at(choice+1).name;
+    dd.moveB = moves.at(choice).name;
   cout  << "Enter MoveC: ";
     cin >> choice;
-    dd.moveC = moves.at(choice+1).name;
+    dd.moveC = moves.at(choice).name;
 
   appendDoughnautHolder.push_back(dd);
-  cout << "Your combatant looks like: \n"
-       << appendDoughnautHolder.at(0) << endl;
+  cout << "\nYour combatant looks like: \n"
+       << appendDoughnautHolder.at(0) << endl << endl;
     
   cout << std::left << setw(3) << setfill(' ') << "#" << "Options\n"
        << std::left << setw(3) << setfill(' ') << "1" << "Confirm\n"
@@ -321,14 +357,16 @@ void DoughNaut::createDoughNaut() {
         if (fout.good()) {
           fout << dd.name << "," 
                << dd.health << ","
-               << dd.speed 
-               << dd.moveA
-               << dd.moveB
-               << dd.moveC
+               << dd.speed << ","
+               << dd.moveA << ","
+               << dd.moveB << ","
+               << dd.moveC 
                << "\n";
         // Close out Streams
           fout.close();
-                cout << "Successfully created " << appendDoughnautHolder.at(0).name << endl << endl;
+            cout << "Successfully created " << appendDoughnautHolder.at(0).name << endl << endl;
+            doughnauts.push_back(appendDoughnautHolder.at(0));
+            appendDoughnautHolder.clear();
         }
         else {
           cout << "Failed to append\n";
@@ -359,12 +397,13 @@ void DoughNaut::createDoughNaut() {
 
 string DoughNaut::outputDoughnauts() {
   // header
-  cout << std::left << setw(15) << setfill(' ') << "Name"
+  cout << std::left << setw(3) << setfill(' ') << "#"
+       << std::left << setw(15) << setfill(' ') << "Name"
        << std::left << setw(7) << setfill(' ') << "Health"
        << std::left << setw(7) << setfill(' ') << "Speed"
        << std::left << setw(12) << setfill(' ') << "MoveA"
        << std::left << setw(12) << setfill(' ') << "MoveB"
-       << std::left << setw(12) << setfill(' ') << "Movec"
+       << std::left << setw(12) << setfill(' ') << "MoveC"
        << endl;
   // moves
   ostringstream outs;
@@ -427,16 +466,22 @@ bool DoughNaut::loadDoughnauts(string filename) {
 // Tokenize doughnauts stats
 doughnautDetails DoughNaut::tokenizeDoughnauts(string input) {
   doughnautDetails dd;
-  string convertHealth, convertSpeed;
+  string convertIndex, convertHealth, convertSpeed;
   istringstream ss(input);
+  // convert to #
+  getline(ss, convertIndex, ',');
+    stringstream ssCRN(convertIndex); 
+    ssCRN >> dd.index;
+    // clear string + buffer so it can be used again
+    ssCRN.str("");
+    ssCRN.clear();   
   getline(ss, dd.name, ',');
   // convert segment into integer
   getline(ss, convertHealth, ',');
-    stringstream ssCRN(convertHealth); 
-    ssCRN >> dd.health;
-    // clear string + buffer so it can be used again
-    ssCRN.str("");
-    ssCRN.clear();
+    ssCRN << " " << convertHealth;
+      ssCRN >> dd.health;
+      ssCRN.str("");
+      ssCRN.clear();
   getline(ss, convertSpeed, ',');
   // allows ssCRN to be used again
   ssCRN << " " << convertSpeed;
